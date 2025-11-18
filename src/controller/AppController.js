@@ -35,53 +35,104 @@ class AppController {
       const body = req.body;
       const change = body.entry?.[0]?.changes?.[0]?.value;
 
-      // Skip if no actual user message exists
-      if (!change?.messages) {
-        console.log('ℹ️ No incoming message. Probably a status update.');
-        return;
-      }
+      console.log("JSON.stringify(body)")
+      console.log(JSON.stringify(body))
 
-      const messages = change.messages;
-      const msg = messages[0];
+      // ✅ Handle incoming messages (you already have this)
+      if (change?.messages) {
+        const messages = change.messages;
+        const msg = messages[0];
 
-      const phoneNumber = msg.from;
-      const message = msg.text?.body;
-      const timestamp = msg.timestamp;
-      const timeSent = new Date(Number(timestamp) * 1000);
+        const phoneNumber = msg.from;
+        const message = msg.text?.body;
+        const timestamp = msg.timestamp;
+        const timeSent = new Date(Number(timestamp) * 1000);
 
-      if (!phoneNumber?.trim() || !message?.trim()) {
-        console.log('❌ Invalid phone number or message');
-        return;
-      }
+        if (!phoneNumber?.trim() || !message?.trim()) {
+          console.log('❌ Invalid phone number or message');
+          return;
+        }
 
-      console.log(`📩 Message from ${phoneNumber}: ${message}`);
-      console.log(`🕐 Sent at: ${timeSent.toISOString()}`);
+        console.log(`📩 Message from ${phoneNumber}: ${message}`);
+        console.log(`🕐 Sent at: ${timeSent.toISOString()}`);
 
-      // Send waiting message
-      await this.whatsappService.sendMessage(
-        phoneNumber,
-        'Baik, mohon tunggu sebentar. Kami akan carikan informasi yang kamu inginkan 🔍'
-      );
-
-      // Process the message with FAQ service (now using AI)
-      const faqResponse = await this.faqService.findAnswer(message);
-      
-      // Send the FAQ response back
-      if (faqResponse) {
-        await this.whatsappService.sendMessage(phoneNumber, faqResponse);
-        console.log(`✅ Replied to ${phoneNumber} with AI-generated answer`);
-      } else {
+        // Your existing message handling logic...
         await this.whatsappService.sendMessage(
           phoneNumber,
-          'Maaf, saya belum memiliki informasi mengenai pertanyaan tersebut. Silakan hubungi customer service kami untuk bantuan lebih lanjut.'
+          'Baik, mohon tunggu sebentar. Kami akan carikan informasi yang kamu inginkan 🔍'
         );
-        console.log(`⚠️ No answer found for ${phoneNumber}`);
+
+        const faqResponse = await this.faqService.findAnswer(message);
+        
+        if (faqResponse) {
+          await this.whatsappService.sendMessage(phoneNumber, faqResponse);
+          console.log(`✅ Replied to ${phoneNumber} with AI-generated answer`);
+        } else {
+          await this.whatsappService.sendMessage(
+            phoneNumber,
+            'Maaf, saya belum memiliki informasi mengenai pertanyaan tersebut. Silakan hubungi customer service kami untuk bantuan lebih lanjut.'
+          );
+          console.log(`⚠️ No answer found for ${phoneNumber}`);
+        }
+      }
+
+      // 🆕 ADD THIS: Handle message status updates (delivery, read, failed, etc.)
+      if (change?.statuses) {
+        const statuses = change.statuses;
+        const status = statuses[0];
+
+        const messageId = status.id;
+        const recipientId = status.recipient_id;
+        const statusType = status.status; // 'sent', 'delivered', 'read', 'failed'
+        const timestamp = status.timestamp;
+
+        console.log(`📊 Status Update for message ${messageId}:`);
+        console.log(`   Recipient: ${recipientId}`);
+        console.log(`   Status: ${statusType}`);
+        console.log(`   Time: ${new Date(Number(timestamp) * 1000).toISOString()}`);
+
+        // Handle failed messages
+        if (statusType === 'failed') {
+          const errors = status.errors || [];
+          console.error(`❌ Message ${messageId} FAILED to ${recipientId}`);
+          
+          errors.forEach(error => {
+            console.error(`   Error Code: ${error.code}`);
+            console.error(`   Error Title: ${error.title}`);
+            console.error(`   Error Message: ${error.message}`);
+            console.error(`   Error Details: ${JSON.stringify(error.error_data)}`);
+          });
+
+          // Log common error codes
+          if (errors.some(e => e.code === 131047)) {
+            console.error(`   ⚠️ ERROR 131047: Re-engagement required - User hasn't opted in or 24hr window expired`);
+          }
+          if (errors.some(e => e.code === 131026)) {
+            console.error(`   ⚠️ ERROR 131026: Message undeliverable`);
+          }
+          if (errors.some(e => e.code === 130472)) {
+            console.error(`   ⚠️ ERROR 130472: User's phone number is not on WhatsApp`);
+          }
+        }
+
+        // Handle successful deliveries
+        if (statusType === 'delivered') {
+          console.log(`✅ Message ${messageId} delivered to ${recipientId}`);
+        }
+
+        if (statusType === 'read') {
+          console.log(`👁️ Message ${messageId} read by ${recipientId}`);
+        }
+      }
+
+      // Handle other webhook events
+      if (!change?.messages && !change?.statuses) {
+        console.log('ℹ️ Other webhook event received:', JSON.stringify(change, null, 2));
       }
 
     } catch (error) {
       console.error('❌ Error processing webhook:', error);
       
-      // Try to send error message to user
       try {
         const phoneNumber = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0]?.from;
         if (phoneNumber) {
