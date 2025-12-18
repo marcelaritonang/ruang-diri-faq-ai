@@ -1,0 +1,24 @@
+features:
+  - node
+
+nginx:
+  root: public_html/public
+  fastcgi: off
+  locations:
+    - match: /
+      proxy_pass: http://127.0.0.1:29537
+
+commands:
+  - filename: .env
+    content: |
+      PORT=29537
+      NODE_ENV=production
+      GEMINI_API_KEY=AIzaSyBvONOieqfDOiadhCgActdMyeEOjSUSiqI
+      WHATSAPP_PHONE_NUMBER_ID=901684173023305
+      WHATSAPP_BUSINESS_ACCOUNT_ID=724241480713413
+      WHATSAPP_TOKEN=EAAlmTuGdZBvsBQMtRiA3832ZA9IJ3z9IHx9ZAkIwHMHmRjTuAA5wOONLGgP49VNHoDA6xMbC2xQgVYYlLTBK4pw69PxSbh1w3jmUBCfntj5JuZCeiuWTiADlrcLCGJwgpVbZCqkIiOiTZBpOqomw3D1WXFCv43QHMi5hrZCvptQriZADk0mbMhYUBOd5hyfwUogkfEhs09NSySwTZBxXov5jOHuplSvJ58PUV6QtTaHJ0Rn4ju0TkDFk7FTtFZA4BLzUupL6XZAWz3dV1WaNmjjUyiZBXDXn
+      WHATSAPP_VERIFY_TOKEN=alizhar123
+  - npm install
+  - npm start &
+
+source: clear

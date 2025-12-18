@@ -55,7 +55,7 @@ app.use('/', routes);
 // Error handler (must be last)
 app.use(errorHandler);
 
-const PORT = config.port;
+const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
