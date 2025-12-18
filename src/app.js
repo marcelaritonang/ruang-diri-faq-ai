@@ -7,7 +7,7 @@ import config from './config/environment.js';
 
 const app = express();
 
-// CORS - Allow all origins (or specify your React app's URL)
+// CORS
 app.use(cors());
 
 // Middleware
@@ -19,7 +19,37 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Routes
+// ===== TEST ENDPOINT (LANGSUNG DI APP.JS) =====
+app.get('/test-direct', (req, res) => {
+  console.log('🧪 TEST DIRECT ENDPOINT HIT!');
+  res.send('TEST DIRECT WORKS!');
+});
+
+// ===== WEBHOOK LANGSUNG (BYPASS ROUTES) =====
+app.get('/whatsapp/webhook', (req, res) => {
+  console.log('🔔 WEBHOOK ENDPOINT HIT!');
+  console.log('Query:', req.query);
+  
+  const verifyToken = process.env.WHATSAPP_VERIFY_TOKEN;
+  const mode = req.query['hub.mode'];
+  const token = req.query['hub.verify_token'];
+  const challenge = req.query['hub.challenge'];
+
+  console.log('Verify Token from env:', verifyToken);
+  console.log('Received:', { mode, token, challenge });
+
+  if (mode === 'subscribe' && token === verifyToken) {
+    console.log('✅ Webhook verified!');
+    return res.status(200).send(challenge);
+  } else {
+    console.log('❌ Verification failed!');
+    return res.sendStatus(403);
+  }
+});
+
+
+
+// ===== ROUTES =====
 app.use('/', routes);
 
 // Error handler (must be last)
@@ -30,7 +60,8 @@ const PORT = config.port;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📱 WhatsApp webhook ready at /whatsapp/webhook`);
-  console.log(`📱 Manual chat ready at /chat`);
+  console.log(`🌐 Environment: ${config.nodeEnv}`);
+  console.log(`🔑 Verify Token: ${process.env.WHATSAPP_VERIFY_TOKEN}`);
 });
 
 export default app;
