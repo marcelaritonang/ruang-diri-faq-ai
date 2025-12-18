@@ -6,35 +6,41 @@ class AppController {
 
   // WhatsApp Webhook Verification (GET)
   verifyWebhook = (req, res) => {
-    try {
-      const mode = req.query['hub.mode'];
-      const token = req.query['hub.verify_token'];
-      const challenge = req.query['hub.challenge'];
+  console.log('🔔 VERIFY WEBHOOK CALLED!'); // ← TAMBAHKAN INI
+  console.log('Query params:', req.query); // ← DAN INI
+  
+  try {
+    const mode = req.query['hub.mode'];
+    const token = req.query['hub.verify_token'];
+    const challenge = req.query['hub.challenge'];
 
-      const verifyToken = process.env.WHATSAPP_VERIFY_TOKEN;
+    const verifyToken = process.env.WHATSAPP_VERIFY_TOKEN;
 
-      if (mode && token && mode === 'subscribe' && token === verifyToken) {
-        console.log('✅ Webhook verified successfully');
-        return res.status(200).send(challenge);
-      } else {
-        console.log('❌ Webhook verification failed');
-        return res.sendStatus(403);
-      }
-    } catch (error) {
-      console.error('Error in webhook verification:', error);
-      return res.sendStatus(500);
+    console.log('Received:', { mode, token, challenge, verifyToken }); // ← DAN INI
+
+    if (mode && token && mode === 'subscribe' && token === verifyToken) {
+      console.log('✅ Webhook verified successfully');
+      return res.status(200).send(challenge);
+    } else {
+      console.log('❌ Webhook verification failed');
+      return res.sendStatus(403);
     }
-  };
+  } catch (error) {
+    console.error('Error in webhook verification:', error);
+    return res.sendStatus(500);
+  }
+};
 
   // WhatsApp Webhook Receiver (POST)
   receiveAndReply = async (req, res) => {
     try {
       // Respond immediately to prevent retries
+      console.log('📥 Full webhook body:', JSON.stringify(req.body, null, 2));
       res.status(200).send('OK');
 
       const body = req.body;
       const change = body.entry?.[0]?.changes?.[0]?.value;
-
+      console.log('📊 Parsed change:', JSON.stringify(change, null, 2));
       console.log("JSON.stringify(body)")
       console.log(JSON.stringify(body))
 
