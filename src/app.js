@@ -27,9 +27,9 @@ app.get('/test-direct', (req, res) => {
 
 // ===== WEBHOOK LANGSUNG (BYPASS ROUTES) =====
 app.get('/whatsapp/webhook', (req, res) => {
-  console.log('🔔 WEBHOOK ENDPOINT HIT!');
+  console.log('🔔 WEBHOOK GET ENDPOINT HIT!');
   console.log('Query:', req.query);
-  
+
   const verifyToken = process.env.WHATSAPP_VERIFY_TOKEN;
   const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
@@ -47,7 +47,14 @@ app.get('/whatsapp/webhook', (req, res) => {
   }
 });
 
-
+// Debug: Log ALL incoming requests
+app.use((req, res, next) => {
+  console.log(`📨 ${req.method} ${req.path}`);
+  if (req.method === 'POST' && req.path === '/whatsapp/webhook') {
+    console.log('📥 POST webhook body:', JSON.stringify(req.body, null, 2));
+  }
+  next();
+});
 
 // ===== ROUTES =====
 app.use('/', routes);
