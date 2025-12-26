@@ -44,8 +44,14 @@ class AppController {
       console.log("JSON.stringify(body)")
       console.log(JSON.stringify(body))
 
+      console.log('🔍 Checking for messages...');
+      console.log('   change exists?', !!change);
+      console.log('   change.messages exists?', !!change?.messages);
+      console.log('   change.statuses exists?', !!change?.statuses);
+
       // ✅ Handle incoming messages (you already have this)
       if (change?.messages) {
+        console.log('✅ ENTERING MESSAGE PROCESSING BLOCK');
         const messages = change.messages;
         const msg = messages[0];
 
@@ -54,8 +60,13 @@ class AppController {
         const timestamp = msg.timestamp;
         const timeSent = new Date(Number(timestamp) * 1000);
 
+        console.log('📝 Extracted data:');
+        console.log('   Phone:', phoneNumber);
+        console.log('   Message:', message);
+        console.log('   Timestamp:', timestamp);
+
         if (!phoneNumber?.trim() || !message?.trim()) {
-          console.log('❌ Invalid phone number or message');
+          console.log('❌ Invalid phone number or message - STOPPING');
           return;
         }
 
@@ -63,23 +74,30 @@ class AppController {
         console.log(`🕐 Sent at: ${timeSent.toISOString()}`);
 
         // Your existing message handling logic...
+        console.log('📤 Sending acknowledgment message...');
         await this.whatsappService.sendMessage(
           phoneNumber,
           'Baik, mohon tunggu sebentar. Kami akan carikan informasi yang kamu inginkan 🔍'
         );
+        console.log('✅ Acknowledgment message sent');
 
+        console.log('🤖 Getting AI response...');
         const faqResponse = await this.faqService.findAnswer(message);
-        
+        console.log('AI Response:', faqResponse ? 'Found' : 'Not found');
+
         if (faqResponse) {
+          console.log('📤 Sending AI response...');
           await this.whatsappService.sendMessage(phoneNumber, faqResponse);
           console.log(`✅ Replied to ${phoneNumber} with AI-generated answer`);
         } else {
+          console.log('📤 Sending fallback message...');
           await this.whatsappService.sendMessage(
             phoneNumber,
             'Maaf, saya belum memiliki informasi mengenai pertanyaan tersebut. Silakan hubungi customer service kami untuk bantuan lebih lanjut.'
           );
           console.log(`⚠️ No answer found for ${phoneNumber}`);
         }
+        console.log('✅ MESSAGE PROCESSING COMPLETED');
       }
 
       // 🆕 ADD THIS: Handle message status updates (delivery, read, failed, etc.)
