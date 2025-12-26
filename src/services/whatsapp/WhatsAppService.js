@@ -37,7 +37,10 @@ class WhatsAppService {
       console.log('✅ Message sent successfully:', response.data);
       return response.data;
     } catch (error) {
-      console.error('❌ Error sending message:', error.response?.data || error.message);
+      console.error('❌ Error sending message:');
+      console.error('Status:', error.response?.status);
+      console.error('Error data:', JSON.stringify(error.response?.data, null, 2));
+      console.error('Full error:', error.message);
       throw error;
     }
   }
