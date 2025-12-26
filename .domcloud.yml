@@ -11,6 +11,7 @@ nginx:
     app_start_command: env PORT=$PORT node src/app.js
 
 commands:
+  - git pull origin main
   - filename: .env
     content: |
       PORT=29537
@@ -21,4 +22,4 @@ commands:
       WHATSAPP_TOKEN=EAAUY6x5JlkwBQRfxUrnfCtZCLu1fPU1ZCFZBbdppicBjWvapOo4NlZC6diKAiOQhRABYn23vS7BJeuqHXHHhB92sKhkAzlZAIWZAX3rhQLVhhZA9rQUQXO156qFPSyhnjDdfWAmFL5O7uof4rTdmrAZA3VW3SZAmsuExsOZA2iYYSAnoxrlxNUzT1dZCRLXUVElGRwZBEtK3DPI99WgmjQLzfjfmvKcRXEx6JgGAKWHRP2Iqf50SymTneWo0VIuVhhED5yw9F5WnRRV71urZAgAiO0qX9fqK0
       WHATSAPP_VERIFY_TOKEN=alizhar123
   - npm install --production
-  - passenger-config restart-app /
+  - mkdir -p tmp && touch tmp/restart.txt
