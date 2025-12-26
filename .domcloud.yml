@@ -1,5 +1,5 @@
 features:
-  - node
+  - node lts
 
 nginx:
   root: public_html/public
@@ -9,6 +9,7 @@ nginx:
       proxy_pass: http://127.0.0.1:29537
 
 commands:
+  - cd ~/public_html
   - filename: .env
     content: |
       PORT=29537
@@ -18,7 +19,11 @@ commands:
       WHATSAPP_BUSINESS_ACCOUNT_ID=724241480713413
       WHATSAPP_TOKEN=EAAlmTuGdZBvsBQMtRiA3832ZA9IJ3z9IHx9ZAkIwHMHmRjTuAA5wOONLGgP49VNHoDA6xMbC2xQgVYYlLTBK4pw69PxSbh1w3jmUBCfntj5JuZCeiuWTiADlrcLCGJwgpVbZCqkIiOiTZBpOqomw3D1WXFCv43QHMi5hrZCvptQriZADk0mbMhYUBOd5hyfwUogkfEhs09NSySwTZBxXov5jOHuplSvJ58PUV6QtTaHJ0Rn4ju0TkDFk7FTtFZA4BLzUupL6XZAWz3dV1WaNmjjUyiZBXDXn
       WHATSAPP_VERIFY_TOKEN=alizhar123
-  - npm install
-  - npm start &
+  - npm install --production
+  - npm install -g pm2
+  - pm2 delete ruang-diri-faq 2>/dev/null || true
+  - pm2 start src/app.js --name ruang-diri-faq
+  - pm2 save
+  - pm2 startup
 
-source: clear
+source: https://github.com/marcelaritonang/ruang-diri-faq-ai
