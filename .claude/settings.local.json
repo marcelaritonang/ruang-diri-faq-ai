@@ -4,7 +4,11 @@
       "Bash(curl:*)",
       "Bash(git push:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(node testESIM.js:*)",
+      "Bash(node testAllRecipients.js:*)",
+      "Bash(node testWebhookSimulation.js:*)",
+      "Bash(node testGeminiAPI.js:*)"
     ]
   }
 }
