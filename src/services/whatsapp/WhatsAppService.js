@@ -6,7 +6,7 @@ class WhatsAppService {
     this.phoneNumberId = config.whatsapp.phoneNumberId;
     this.accessToken = config.whatsapp.accessToken;
     this.token = config.whatsapp.token;
-    this.apiUrl = `https://graph.facebook.com/v18.0/${this.phoneNumberId}/messages`;
+    this.apiUrl = `https://graph.facebook.com/v24.0/${this.phoneNumberId}/messages`;
     
     console.log('✅ WhatsAppService initialized');
   }
@@ -18,11 +18,9 @@ class WhatsAppService {
 
       const payload = {
         messaging_product: 'whatsapp',
-        recipient_type: 'individual',
         to: to,
         type: 'text',
         text: {
-          preview_url: false,
           body: message
         }
       };
