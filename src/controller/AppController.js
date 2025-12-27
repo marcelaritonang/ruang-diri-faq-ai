@@ -75,12 +75,44 @@ class AppController {
 
         // Your existing message handling logic...
         console.log('📤 Sending acknowledgment message...');
-        await this.whatsappService.sendMessage(
-          phoneNumber,
-          'Baik, mohon tunggu sebentar. Kami akan carikan informasi yang kamu inginkan 🔍'
-        );
-        console.log('✅ Acknowledgment message sent');
+        try {
+          await this.whatsappService.sendMessage(
+            phoneNumber,
+            'Baik, mohon tunggu sebentar. Kami akan carikan informasi yang kamu inginkan 🔍'
+          );
+          console.log('✅ Acknowledgment message sent successfully!');
+        } catch (ackError) {
+          console.error('❌ ERROR sending acknowledgment:', ackError);
+          console.error('❌ Error message:', ackError.message);
+          console.error('❌ Error stack:', ackError.stack);
+          if (ackError.response) {
+            console.error('❌ API Response:', ackError.response.data);
+          }
+          throw ackError; // Re-throw to be caught by outer try-catch
+        }
 
+        console.log('🤖 Preparing response...');
+        // TEMPORARY: Skip AI, send static test response
+        const testResponse = `✅ TEST BERHASIL!\n\nBot menerima pesan Anda: "${message}"\n\nJika Anda menerima pesan ini, berarti:\n✅ Webhook working\n✅ Token valid\n✅ Sending messages working\n\n🎉 Bot siap 100%!`;
+
+        console.log('✅ Response prepared, sending...');
+
+        try {
+          await this.whatsappService.sendMessage(phoneNumber, testResponse);
+          console.log(`✅ SUCCESS! Test response sent to ${phoneNumber}`);
+        } catch (sendError) {
+          console.error('❌ ERROR sending response:', sendError);
+          console.error('❌ Error message:', sendError.message);
+          console.error('❌ Error stack:', sendError.stack);
+          if (sendError.response) {
+            console.error('❌ API Response:', sendError.response.data);
+            console.error('❌ API Status:', sendError.response.status);
+          }
+          throw sendError;
+        }
+
+        // COMMENTED OUT - AI generation disabled for testing
+        /*
         console.log('🤖 Getting AI response...');
         const faqResponse = await this.faqService.findAnswer(message);
         console.log('AI Response:', faqResponse ? 'Found' : 'Not found');
@@ -97,6 +129,7 @@ class AppController {
           );
           console.log(`⚠️ No answer found for ${phoneNumber}`);
         }
+        */
         console.log('✅ MESSAGE PROCESSING COMPLETED');
       }
 
