@@ -8,7 +8,15 @@
       "Bash(node testESIM.js:*)",
       "Bash(node testAllRecipients.js:*)",
       "Bash(node testWebhookSimulation.js:*)",
-      "Bash(node testGeminiAPI.js:*)"
+      "Bash(node testGeminiAPI.js:*)",
+      "Bash(node debugVercelEnv.js:*)",
+      "Bash(node:*)",
+      "Bash(tasklist:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "Bash(powershell -Command \"Get-Process node | Stop-Process -Force\")",
+      "Bash(timeout /t 2)",
+      "Bash(vercel env:*)"
     ]
   }
 }
