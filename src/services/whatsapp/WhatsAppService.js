@@ -34,7 +34,7 @@ class WhatsAppService {
           'Authorization': `Bearer ${this.token}`,
           'Content-Type': 'application/json'
         },
-        timeout: 10000, // 10 second timeout
+        timeout: 5000, // 5 second timeout (must complete before Vercel 10s timeout)
         validateStatus: (status) => status < 500 // Don't throw on 4xx errors
       });
 
