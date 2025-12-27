@@ -73,11 +73,13 @@ class GeminiService {
     Jawab dalam Bahasa Indonesia:`;
 
     // --- Retry Loop Implementation ---
+    let lastError = null; // Declare error variable outside the loop
+
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
         try {
             if (attempt > 1) {
                 console.log(`⏳ Retrying request (Attempt ${attempt}/${MAX_RETRIES}) after ${delayMs}ms delay...`);
-                await sleep(delayMs);
+                await this.sleep(delayMs);
             }
 
             const result = await this.model.generateContent(prompt);
@@ -88,13 +90,15 @@ class GeminiService {
             return text.trim();
 
         } catch (error) {
+            lastError = error; // Store the error for later reference
+
             // Check for transient errors (like 503) that should trigger a retry
             if (error.status === 503 || error.message?.includes('Service Unavailable') || error.message?.includes('quota') || error.message?.includes('rate limit')) {
-                
-                // If this is the last attempt, re-throw the error
+
+                // If this is the last attempt, fall through to error handling
                 if (attempt === MAX_RETRIES) {
                     console.error(`❌ Final attempt failed. Max retries reached.`);
-                    // Fall through to the final catch block below
+                    break;
                 } else {
                     // Log the transient failure and set the next delay
                     console.warn(`⚠️ Transient error detected (Status ${error.status || 'N/A'}). Will retry in ${delayMs}ms.`);
@@ -102,24 +106,28 @@ class GeminiService {
                     continue; // Continue to the next loop iteration (retry)
                 }
             }
-            
-            // For permanent errors (like 400 Bad Request, invalid key, etc.), break the loop and handle immediately
+
+            // For permanent errors (like 400 Bad Request, invalid key, etc.), break the loop
             console.error('❌ Permanent error encountered. Aborting retries.', error);
-            // Fall through to the final catch block below
-            break; 
+            break;
         }
     }
     // --- End Retry Loop Implementation ---
 
+    // --- Error Handling (executed if loop completes without success) ---
+    if (lastError) {
+        console.error('❌ AI generation failed:', lastError);
 
-    // --- Original Fallback Error Handling (outside the loop) ---
-    // This final block handles the error if the loop completed without success (max retries reached or permanent error)
-    if (error.message?.includes('API key')) {
-        throw new Error('Gemini API key is invalid or not configured properly');
+        if (lastError.message?.includes('API key')) {
+            throw new Error('Gemini API key is invalid or not configured properly');
+        }
+
+        // Catch-all for API errors after max retries
+        throw new Error('Failed to generate AI response. Please try again later.');
     }
-    
-    // Catch-all for API errors after max retries
-    throw new Error('Failed to generate AI response. Please try again later.');
+
+    // Should never reach here, but just in case
+    throw new Error('Unexpected error in AI generation');
   }
 
   /**
