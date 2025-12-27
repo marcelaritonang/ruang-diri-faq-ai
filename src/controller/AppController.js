@@ -91,45 +91,33 @@ class AppController {
           throw ackError; // Re-throw to be caught by outer try-catch
         }
 
-        console.log('🤖 Preparing response...');
-        // TEMPORARY: Skip AI, send static test response
-        const testResponse = `✅ TEST BERHASIL!\n\nBot menerima pesan Anda: "${message}"\n\nJika Anda menerima pesan ini, berarti:\n✅ Webhook working\n✅ Token valid\n✅ Sending messages working\n\n🎉 Bot siap 100%!`;
-
-        console.log('✅ Response prepared, sending...');
-
-        try {
-          await this.whatsappService.sendMessage(phoneNumber, testResponse);
-          console.log(`✅ SUCCESS! Test response sent to ${phoneNumber}`);
-        } catch (sendError) {
-          console.error('❌ ERROR sending response:', sendError);
-          console.error('❌ Error message:', sendError.message);
-          console.error('❌ Error stack:', sendError.stack);
-          if (sendError.response) {
-            console.error('❌ API Response:', sendError.response.data);
-            console.error('❌ API Status:', sendError.response.status);
-          }
-          throw sendError;
-        }
-
-        // COMMENTED OUT - AI generation disabled for testing
-        /*
         console.log('🤖 Getting AI response...');
-        const faqResponse = await this.faqService.findAnswer(message);
-        console.log('AI Response:', faqResponse ? 'Found' : 'Not found');
+        try {
+          const faqResponse = await this.faqService.findAnswer(message);
+          console.log('AI Response:', faqResponse ? 'Found' : 'Not found');
 
-        if (faqResponse) {
-          console.log('📤 Sending AI response...');
-          await this.whatsappService.sendMessage(phoneNumber, faqResponse);
-          console.log(`✅ Replied to ${phoneNumber} with AI-generated answer`);
-        } else {
-          console.log('📤 Sending fallback message...');
-          await this.whatsappService.sendMessage(
-            phoneNumber,
-            'Maaf, saya belum memiliki informasi mengenai pertanyaan tersebut. Silakan hubungi customer service kami untuk bantuan lebih lanjut.'
-          );
-          console.log(`⚠️ No answer found for ${phoneNumber}`);
+          if (faqResponse) {
+            console.log('📤 Sending AI response...');
+            await this.whatsappService.sendMessage(phoneNumber, faqResponse);
+            console.log(`✅ Replied to ${phoneNumber} with AI-generated answer`);
+          } else {
+            console.log('📤 Sending fallback message...');
+            await this.whatsappService.sendMessage(
+              phoneNumber,
+              'Maaf, saya belum memiliki informasi mengenai pertanyaan tersebut. Silakan hubungi customer service kami untuk bantuan lebih lanjut.'
+            );
+            console.log(`⚠️ No answer found for ${phoneNumber}`);
+          }
+        } catch (aiError) {
+          console.error('❌ ERROR in AI response:', aiError);
+          console.error('❌ Error message:', aiError.message);
+          console.error('❌ Error stack:', aiError.stack);
+          if (aiError.response) {
+            console.error('❌ API Response:', aiError.response.data);
+            console.error('❌ API Status:', aiError.response.status);
+          }
+          throw aiError;
         }
-        */
         console.log('✅ MESSAGE PROCESSING COMPLETED');
       }
 
